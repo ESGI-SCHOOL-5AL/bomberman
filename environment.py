@@ -1,5 +1,7 @@
 import objects
 import arcade
+import player
+
 
 GRID_HEIGHT = 15
 GRID_WIDTH = 15
@@ -50,3 +52,11 @@ class Environment:
             for c in r:
                 l.append(c)
         return l
+
+    def generatePlayers(self):
+        players = arcade.SpriteList()
+        for pos in [(1, 1), (GRID_WIDTH-2, GRID_HEIGHT-2), (1, GRID_HEIGHT-2), (GRID_WIDTH-2, 1)]:
+            p = player.Player(self)
+            p.setCenterPos(pos[0], pos[1])
+            players.append(p)
+        return players
