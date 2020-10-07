@@ -4,6 +4,14 @@ import arcade
 GRID_HEIGHT = 15
 GRID_WIDTH = 15
 
+CORNERS = [
+    (1, 1), (2, 1), (1, 2),
+    (GRID_WIDTH-2, GRID_HEIGHT-2), (GRID_WIDTH-3,
+                                    GRID_HEIGHT-2), (GRID_WIDTH-2, GRID_HEIGHT-3),
+    (1, GRID_HEIGHT-2), (2, GRID_HEIGHT-2), (1, GRID_HEIGHT-3),
+    (GRID_WIDTH-2, 1), (GRID_WIDTH-3, 1), (GRID_WIDTH-2, 2)
+]
+
 
 class Environment:
 
@@ -18,17 +26,23 @@ class Environment:
                     self.grid[i].append(wall)
                 elif i % 2 == 0:
                     if j % 2 == 1:
-                        floor = objects.Floor()
-                        floor.setCenterPos(j, i)
-                        self.grid[i].append(floor)
+                        brick = objects.Brick()
+                        brick.setCenterPos(j, i)
+                        self.grid[i].append(brick)
                     else:
                         wall = objects.Wall()
                         wall.setCenterPos(j, i)
                         self.grid[i].append(wall)
                 else:
-                    floor = objects.Floor()
-                    floor.setCenterPos(j, i)
-                    self.grid[i].append(floor)
+                    brick = objects.Brick()
+                    brick.setCenterPos(j, i)
+                    self.grid[i].append(brick)
+
+        # Remove bricks at players start position
+        for pos in CORNERS:
+            floor = objects.Floor()
+            floor.setCenterPos(pos[0], pos[1])
+            self.grid[pos[1]][pos[0]] = floor
 
     def toSpriteList(self):
         l = arcade.SpriteList()

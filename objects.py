@@ -28,4 +28,4 @@ class Wall(Object):
 class Brick(Object):
 
     def __init__(self):
-        super().__init__(False, "brick")
+        super().__init__(False, "bricks")
