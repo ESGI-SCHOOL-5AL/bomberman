@@ -1,7 +1,8 @@
 import objects
+import arcade
 
 GRID_HEIGHT = 15
-GRID_WIDTH = 16
+GRID_WIDTH = 15
 
 
 class Environment:
@@ -12,15 +13,26 @@ class Environment:
             self.grid.append([])
             for j in range(GRID_WIDTH):
                 if i == 0 or i == GRID_HEIGHT-1 or j == 0 or j == GRID_WIDTH-1:
-                    self.grid[i].append(objects.Wall())
+                    wall = objects.Wall()
+                    wall.setCenterPos(j, i)
+                    self.grid[i].append(wall)
                 elif i % 2 == 0:
                     if j % 2 == 1:
-                        self.grid[i].append(objects.Floor())
+                        floor = objects.Floor()
+                        floor.setCenterPos(j, i)
+                        self.grid[i].append(floor)
                     else:
-                        self.grid[i].append(objects.Wall())
+                        wall = objects.Wall()
+                        wall.setCenterPos(j, i)
+                        self.grid[i].append(wall)
                 else:
-                    self.grid[i].append(objects.Floor())
+                    floor = objects.Floor()
+                    floor.setCenterPos(j, i)
+                    self.grid[i].append(floor)
+
+    def toSpriteList(self):
+        l = arcade.SpriteList()
         for r in self.grid:
             for c in r:
-                print(c.sprite, end="")
-            print()
+                l.append(c)
+        return l

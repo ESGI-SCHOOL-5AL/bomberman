@@ -17,7 +17,8 @@ class BombermanGame(arcade.Window):
         # and set them to None
 
     def setup(self):
-        self.environment = environment.Environment()
+        self.env = environment.Environment()
+        self.spriteList = self.env.toSpriteList()
         # Create your sprites and sprite lists here
         pass
 
@@ -25,6 +26,7 @@ class BombermanGame(arcade.Window):
         # This command should happen before we start drawing. It will clear
         # the screen to the background color, and erase what we drew last frame.
         arcade.start_render()
+        self.spriteList.draw()
 
         # Call draw() on all your sprite lists below
 
