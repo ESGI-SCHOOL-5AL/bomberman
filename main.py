@@ -1,8 +1,8 @@
 import arcade
 import environment
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 480
+SCREEN_HEIGHT = 480
 SCREEN_TITLE = "Bomberman"
 
 
@@ -18,26 +18,16 @@ class BombermanGame(arcade.Window):
 
     def setup(self):
         self.env = environment.Environment()
-        self.players = self.env.generatePlayers()
-        self.playablePlayer = self.players[0]
-
-        # Create your sprites and sprite lists here
-        pass
+        self.playablePlayer = self.env.players[0]
 
     def on_draw(self):
         # This command should happen before we start drawing. It will clear
         # the screen to the background color, and erase what we drew last frame.
         arcade.start_render()
-        self.spriteList.draw()
-        self.players.draw()
-
-        # Call draw() on all your sprite lists below
+        self.env.draw()
 
     def on_update(self, delta_time):
-        self.spriteList = self.env.toSpriteList()
-        for s in self.spriteList:
-            s.update(delta_time)
-        pass
+        self.env.update(delta_time)
 
     def on_key_press(self, key, key_modifiers):
         self.playablePlayer.move(key, key_modifiers)

@@ -47,6 +47,17 @@ class Environment:
             floor.setCenterPos(pos[0], pos[1])
             self.grid[pos[1]][pos[0]] = floor
 
+        self.generatePlayers()
+
+    def draw(self):
+        self.spriteList.draw()
+        self.players.draw()
+
+    def update(self, delta_time):
+        self.spriteList = self.toSpriteList()
+        for s in self.spriteList:
+            s.update(delta_time)
+
     def toSpriteList(self):
         l = arcade.SpriteList()
         for r in self.grid:
@@ -55,9 +66,8 @@ class Environment:
         return l
 
     def generatePlayers(self):
-        players = arcade.SpriteList()
+        self.players = arcade.SpriteList()
         for pos in [(1, 1), (GRID_WIDTH-2, GRID_HEIGHT-2), (1, GRID_HEIGHT-2), (GRID_WIDTH-2, 1)]:
             p = player.Player(self)
             p.setCenterPos(pos[0], pos[1])
-            players.append(p)
-        return players
+            self.players.append(p)

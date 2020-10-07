@@ -27,3 +27,6 @@ class Player(objects.Object):
             b.setCenterPos(self.x, self.y)
             self.environment.grid[self.y][self.x] = b
         self.updateCenterPos()
+
+    def onDeath(self):
+        pass

@@ -1,4 +1,5 @@
 import objects
+import arcade
 
 
 class Bomb(objects.Object):
@@ -41,6 +42,20 @@ class Explosion(objects.Object):
         super().__init__(True, "explosion")
         self.remaining = 1
         self.environment = environment
+
+    def setCenterPos(self, x, y):
+        super().setCenterPos(x, y)
+        newList = arcade.SpriteList()
+        for p in self.environment.players:
+            if not self.checkPlayerInside(p):
+                newList.append(p)
+        self.environment.players = newList
+
+    def checkPlayerInside(self, player):
+        if player.x == self.x and player.y == self.y:
+            player.onDeath()
+            return True
+        return False
 
     def update(self, delta_time):
         self.remaining -= delta_time
