@@ -27,14 +27,24 @@ class Bomb(objects.Object):
     def destroyTowards(self, direction):
         for i in range(self.power):
             offset = i*direction
-            if isinstance(self.environment.grid[self.y+offset][self.x], objects.Wall):
+            obj = self.environment.grid[self.y+offset][self.x]
+            if isinstance(obj, objects.Wall):
+                break
+            elif isinstance(obj, Bomb) and (obj.x != self.x or obj.y != self.y):
+                obj.remaining = 0
+                obj.destroyNear()
                 break
             f = Explosion(self.environment)
             f.setCenterPos(self.x, self.y+offset)
             self.environment.grid[self.y+offset][self.x] = f
         for i in range(self.power):
             offset = i*direction
-            if isinstance(self.environment.grid[self.y][self.x+offset], objects.Wall):
+            obj = self.environment.grid[self.y][self.x+offset]
+            if isinstance(obj, objects.Wall):
+                break
+            elif isinstance(obj, Bomb) and (obj.x != self.x or obj.y != self.y):
+                obj.remaining = 0
+                obj.destroyNear()
                 break
             f = Explosion(self.environment)
             f.setCenterPos(self.x+offset, self.y)
