@@ -1,11 +1,14 @@
 import objects
+
 import arcade
 
 
 class Bomb(objects.Object):
 
     def __init__(self, environment):
-        super().__init__(False, "bomb_1")
+        super().__init__(False, "bomb_2")
+        self.append_texture(arcade.load_texture("sprites/bomb_1.png"))
+        self.append_texture(arcade.load_texture("sprites/bomb_0.png"))
         self.remaining = 3
         self.power = 3
         self.environment = environment
@@ -14,6 +17,8 @@ class Bomb(objects.Object):
         self.remaining -= delta_time
         if self.remaining <= 0:
             self.destroyNear()
+        else:
+            self.set_texture(int(self.remaining))
 
     def destroyNear(self):
         self.destroyTowards(1)
