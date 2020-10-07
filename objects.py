@@ -19,6 +19,9 @@ class Object(arcade.Sprite):
         self.center_x = self.width * self.x + self.width / 2
         self.center_y = self.height * self.y + self.height / 2
 
+    def update(self, delta_time):
+        pass
+
 
 class Floor(Object):
 

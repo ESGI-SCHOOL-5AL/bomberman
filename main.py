@@ -18,7 +18,6 @@ class BombermanGame(arcade.Window):
 
     def setup(self):
         self.env = environment.Environment()
-        self.envSpriteList = self.env.toSpriteList()
         self.players = self.env.generatePlayers()
         self.playablePlayer = self.players[0]
 
@@ -29,12 +28,15 @@ class BombermanGame(arcade.Window):
         # This command should happen before we start drawing. It will clear
         # the screen to the background color, and erase what we drew last frame.
         arcade.start_render()
-        self.envSpriteList.draw()
+        self.spriteList.draw()
         self.players.draw()
 
         # Call draw() on all your sprite lists below
 
     def on_update(self, delta_time):
+        self.spriteList = self.env.toSpriteList()
+        for s in self.spriteList:
+            s.update(delta_time)
         pass
 
     def on_key_press(self, key, key_modifiers):

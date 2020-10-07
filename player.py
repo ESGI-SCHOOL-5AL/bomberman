@@ -1,4 +1,5 @@
 import objects
+import bomb
 import arcade
 
 
@@ -21,4 +22,8 @@ class Player(objects.Object):
             self.y -= 1
         elif (key == arcade.key.D or key == arcade.key.RIGHT) and self.environment.grid[self.y][self.x+1].traversable:
             self.x += 1
+        elif key == arcade.key.SPACE:  # Bomb
+            b = bomb.Bomb(self.environment)
+            b.setCenterPos(self.x, self.y)
+            self.environment.grid[self.y][self.x] = b
         self.updateCenterPos()

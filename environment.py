@@ -19,6 +19,7 @@ class Environment:
 
     def __init__(self):
         self.grid = []
+        self.spriteList = []
         for i in range(GRID_HEIGHT):
             self.grid.append([])
             for j in range(GRID_WIDTH):
