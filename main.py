@@ -31,7 +31,6 @@ class BombermanGame(arcade.Window):
 
     def on_key_press(self, key, key_modifiers):
         self.playablePlayer.move(key, key_modifiers)
-        pass
 
     def on_key_release(self, key, key_modifiers):
         pass
