@@ -1,7 +1,7 @@
-import objects
-from bomb import Bomb
 import arcade
 
+from . import objects
+from .bomb import Bomb
 
 class Player(objects.Object):
 

@@ -9,8 +9,8 @@ setup(
         "arcade"
     ],
     entry_points={
-        "console_script": [
-            "bomberman = main"
+        "gui_scripts": [
+            "bomberman = bomberman.__main__:main"
         ]
     }
 )

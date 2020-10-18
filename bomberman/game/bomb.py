@@ -1,7 +1,6 @@
-import objects
-
 import arcade
 
+from . import objects
 
 class Bomb(objects.Object):
 

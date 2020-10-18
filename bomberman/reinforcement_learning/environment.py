@@ -1,7 +1,8 @@
-import objects
 import arcade
-from player import Player
-from agent import Agent
+
+from ..game import objects
+from ..game.player import Player
+from .agent import Agent
 
 
 GRID_HEIGHT = 15

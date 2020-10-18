@@ -1,6 +1,7 @@
-from player import Player
-from bomb import Bomb
 import arcade
+
+from ..game.player import Player
+from ..game.bomb import Bomb
 
 ACTIONS = [arcade.key.Z, arcade.key.S, arcade.key.Q, arcade.key.D, arcade.key.SPACE, 0]
 
