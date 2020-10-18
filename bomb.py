@@ -5,13 +5,14 @@ import arcade
 
 class Bomb(objects.Object):
 
-    def __init__(self, environment):
+    def __init__(self, environment, owner):
         super().__init__(False, "bomb_2")
         self.append_texture(arcade.load_texture("sprites/bomb_1.png"))
         self.append_texture(arcade.load_texture("sprites/bomb_0.png"))
         self.remaining = 3
         self.power = 3
         self.environment = environment
+        self.owner = owner
 
     def update(self, delta_time):
         self.remaining -= delta_time
@@ -34,8 +35,11 @@ class Bomb(objects.Object):
                 obj.remaining = 0
                 obj.destroyNear()
                 break
-            f = Explosion(self.environment)
+            f = Explosion(self.environment, self.owner)
             f.setCenterPos(self.x, self.y+offset)
+
+            if isinstance(obj, objects.Brick):
+                self.owner.onDestroyBrick(obj)
             self.environment.grid[self.y+offset][self.x] = f
         for i in range(self.power):
             offset = i*direction
@@ -46,29 +50,35 @@ class Bomb(objects.Object):
                 obj.remaining = 0
                 obj.destroyNear()
                 break
-            f = Explosion(self.environment)
+
+            if isinstance(obj, objects.Brick):
+                self.owner.onDestroyBrick(obj)
+            f = Explosion(self.environment, self.owner)
             f.setCenterPos(self.x+offset, self.y)
             self.environment.grid[self.y][self.x+offset] = f
 
 
 class Explosion(objects.Object):
 
-    def __init__(self, environment):
+    def __init__(self, environment, owner):
         super().__init__(True, "explosion")
         self.remaining = 1
         self.environment = environment
+        self.owner = owner
 
     def setCenterPos(self, x, y):
         super().setCenterPos(x, y)
-        newList = arcade.SpriteList()
+        # newList = arcade.SpriteList()
         for p in self.environment.players:
-            if not self.checkPlayerInside(p):
-                newList.append(p)
-        self.environment.players = newList
+            self.checkPlayerInside(p)
+            # if not self.checkPlayerInside(p):
+            #     newList.append(p)
+        # self.environment.players = newList
 
     def checkPlayerInside(self, player):
         if player.x == self.x and player.y == self.y:
             player.onDeath()
+            self.owner.onKill(player)
             return True
         return False
 

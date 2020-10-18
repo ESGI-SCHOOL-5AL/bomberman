@@ -1,6 +1,7 @@
 import objects
 import arcade
-import player
+from player import Player
+from agent import Agent
 
 
 GRID_HEIGHT = 15
@@ -18,8 +19,13 @@ CORNERS = [
 class Environment:
 
     def __init__(self):
-        self.grid = []
         self.spriteList = []
+        self.generateTerrain()
+        self.generatePlayers()
+
+    def generateTerrain(self):
+        self.grid = []
+        self.states = {}
         for i in range(GRID_HEIGHT):
             self.grid.append([])
             for j in range(GRID_WIDTH):
@@ -40,6 +46,7 @@ class Environment:
                     brick = objects.Brick()
                     brick.setCenterPos(j, i)
                     self.grid[i].append(brick)
+                self.states[(i, j)] = self.grid[i][j]
 
         # Remove bricks at players start position
         for pos in CORNERS:
@@ -47,16 +54,37 @@ class Environment:
             floor.setCenterPos(pos[0], pos[1])
             self.grid[pos[1]][pos[0]] = floor
 
-        self.generatePlayers()
+    def reset(self):
+        self.generateTerrain()
+        pos = [(1, 1), (GRID_WIDTH-2, GRID_HEIGHT-2), (1, GRID_HEIGHT-2), (GRID_WIDTH-2, 1)]
+        i = 0
+        while i < len(self.players):
+            self.players[i].setCenterPos(pos[i][0], pos[i][1])
+            self.players[i].reset()
+            i += 1
 
     def draw(self):
         self.spriteList.draw()
-        self.players.draw()
+        for p in self.players:
+            if p.alive:
+                p.draw()
+        # self.players.draw()
 
     def update(self, delta_time):
         self.spriteList = self.toSpriteList()
         for s in self.spriteList:
             s.update(delta_time)
+        for p in self.players:
+            p.update(delta_time)
+
+        ok = False
+        for p in self.players:
+            if p.alive:
+                ok = True
+                break
+        
+        if not ok:
+            self.reset()
 
     def toSpriteList(self):
         l = arcade.SpriteList()
@@ -68,6 +96,6 @@ class Environment:
     def generatePlayers(self):
         self.players = arcade.SpriteList()
         for pos in [(1, 1), (GRID_WIDTH-2, GRID_HEIGHT-2), (1, GRID_HEIGHT-2), (GRID_WIDTH-2, 1)]:
-            p = player.Player(self)
+            p = Agent(self)
             p.setCenterPos(pos[0], pos[1])
             self.players.append(p)

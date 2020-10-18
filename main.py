@@ -18,7 +18,7 @@ class BombermanGame(arcade.Window):
 
     def setup(self):
         self.env = environment.Environment()
-        self.playablePlayer = self.env.players[0]
+        # self.playablePlayer = self.env.players[0]
 
     def on_draw(self):
         # This command should happen before we start drawing. It will clear
@@ -30,7 +30,8 @@ class BombermanGame(arcade.Window):
         self.env.update(delta_time)
 
     def on_key_press(self, key, key_modifiers):
-        self.playablePlayer.move(key, key_modifiers)
+        if hasattr(self, 'playablePlayer'):
+            self.playablePlayer.move(key, key_modifiers)
 
     def on_key_release(self, key, key_modifiers):
         pass
