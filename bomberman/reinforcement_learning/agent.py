@@ -43,12 +43,18 @@ class Agent(Player):
         action = self.policy.best_action(
             state, self.environment, self.x, self.y)
         self.previous_state = state
+
+        # there is a bomb at player's location
+        is_bomb = isinstance(self.environment.grid[self.y][self.x], Bomb)
+
         if action != 0:  # 0 means do nothing
             self.move(action, 0)
         else:
             reward = REWARD_IDLE
 
-        if action == arcade.key.SPACE:
+        if self.previous_state[0] == self.x and self.previous_state[1] == self.y and action != arcade.key.SPACE and action != 0:
+            reward = REWARD_IMPOSSIBLE
+        elif action == arcade.key.SPACE and not is_bomb:
             reward = REWARD_BOMB
 
         self.score += reward
@@ -100,12 +106,6 @@ class Policy:  # Q-table
         action = None
         for a in self.table[state]:
             if action is None or self.table[state][a] > self.table[state][action]:
-                if ((a == arcade.key.Z and not environment.grid[y+1][x].traversable)
-                    or (a == arcade.key.Q and not environment.grid[y][x-1].traversable)
-                    or (a == arcade.key.S and not environment.grid[y-1][x].traversable)
-                        or (a == arcade.key.D and not environment.grid[y][x+1].traversable)
-                        or (a == arcade.key.SPACE and isinstance(environment.grid[y][x], Bomb))):
-                    continue
                 action = a
         return action
 
