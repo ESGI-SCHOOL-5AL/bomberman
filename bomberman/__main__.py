@@ -1,6 +1,6 @@
 import arcade
 
-from .reinforcement_learning import environment
+from .game import environment
 
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 480

@@ -2,7 +2,7 @@ import arcade
 
 from ..game import objects
 from ..game.player import Player
-from .agent import Agent
+from ..reinforcement_learning.agent import Agent
 
 
 GRID_HEIGHT = 15
@@ -57,7 +57,8 @@ class Environment:
 
     def reset(self):
         self.generateTerrain()
-        pos = [(1, 1), (GRID_WIDTH-2, GRID_HEIGHT-2), (1, GRID_HEIGHT-2), (GRID_WIDTH-2, 1)]
+        pos = [(1, 1), (GRID_WIDTH-2, GRID_HEIGHT-2),
+               (1, GRID_HEIGHT-2), (GRID_WIDTH-2, 1)]
         i = 0
         while i < len(self.players):
             self.players[i].setCenterPos(pos[i][0], pos[i][1])
@@ -83,7 +84,7 @@ class Environment:
             if p.alive:
                 ok = True
                 break
-        
+
         if not ok:
             self.reset()
 
