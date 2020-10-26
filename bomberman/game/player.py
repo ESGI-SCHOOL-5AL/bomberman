@@ -3,6 +3,7 @@ import arcade
 from . import objects
 from .bomb import Bomb
 
+
 class Player(objects.Object):
 
     def __init__(self, environment):
@@ -24,7 +25,7 @@ class Player(objects.Object):
         elif (key == arcade.key.D or key == arcade.key.RIGHT) and self.environment.grid[self.y][self.x+1].traversable:
             self.x += 1
         elif key == arcade.key.SPACE and not isinstance(self.environment.grid[self.y][self.x], Bomb):
-            b = Bomb(self.environment, self)
+            b = Bomb(self.environment, self, (self.x, self.y))
             b.setCenterPos(self.x, self.y)
             self.environment.grid[self.y][self.x] = b
         self.updateCenterPos()
@@ -37,6 +38,6 @@ class Player(objects.Object):
 
     def onKill(self, player):
         pass
-    
+
     def onDestroyBrick(self, brick):
         pass

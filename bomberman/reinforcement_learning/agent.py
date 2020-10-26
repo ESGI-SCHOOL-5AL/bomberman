@@ -8,9 +8,9 @@ ACTIONS = [arcade.key.Z, arcade.key.S,
 
 REWARD_IMPOSSIBLE = -60
 REWARD_DEATH = -50
-REWARD_DEFAULT = -2
-REWARD_IDLE = -1
-REWARD_BOMB = -5
+REWARD_DEFAULT = -1
+REWARD_IDLE = -2
+REWARD_BOMB = -40
 REWARD_DESTROY_BRICKS = 5
 REWARD_KILL = 60
 REWARD_WIN = 80
@@ -45,6 +45,7 @@ class Agent(Player):
         self.previous_state = state
         if action != 0:  # 0 means do nothing
             self.move(action, 0)
+        else:
             reward = REWARD_IDLE
 
         if action == arcade.key.SPACE:
@@ -61,16 +62,20 @@ class Agent(Player):
         # -1 means he is not responsible
         self.policy.update(self.previous_state, (self.x, self.y), -1, reward)
 
-    def onKill(self, player):
+    def onKill(self, player, ref_state):
         reward = REWARD_KILL
+        if player == self:
+            reward *= -1
         self.score += reward
         # TODO how to match source action?
-        self.policy.update(self.previous_state, (self.x, self.y), -1, reward)
+        self.policy.update(ref_state, (self.x, self.y),
+                           arcade.key.SPACE, reward)
 
-    def onDestroyBrick(self, brick):
+    def onDestroyBrick(self, brick, ref_state):
         reward = REWARD_DESTROY_BRICKS
         self.score += reward
-        self.policy.update(self.previous_state, (self.x, self.y), -1, reward)
+        self.policy.update(ref_state, (self.x, self.y),
+                           arcade.key.SPACE, reward)
 
 
 class Policy:  # Q-table

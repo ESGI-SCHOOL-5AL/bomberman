@@ -2,9 +2,10 @@ import arcade
 
 from . import objects
 
+
 class Bomb(objects.Object):
 
-    def __init__(self, environment, owner):
+    def __init__(self, environment, owner, ref_state):
         super().__init__(False, "bomb_2")
         self.append_texture(arcade.load_texture("sprites/bomb_1.png"))
         self.append_texture(arcade.load_texture("sprites/bomb_0.png"))
@@ -12,6 +13,7 @@ class Bomb(objects.Object):
         self.power = 3
         self.environment = environment
         self.owner = owner
+        self.ref_state = ref_state
 
     def update(self, delta_time):
         self.remaining -= delta_time
@@ -34,11 +36,11 @@ class Bomb(objects.Object):
                 obj.remaining = 0
                 obj.destroyNear()
                 break
-            f = Explosion(self.environment, self.owner)
+            f = Explosion(self.environment, self.owner, self.ref_state)
             f.setCenterPos(self.x, self.y+offset)
 
             if isinstance(obj, objects.Brick):
-                self.owner.onDestroyBrick(obj)
+                self.owner.onDestroyBrick(obj, self.ref_state)
             self.environment.grid[self.y+offset][self.x] = f
         for i in range(self.power):
             offset = i*direction
@@ -51,19 +53,20 @@ class Bomb(objects.Object):
                 break
 
             if isinstance(obj, objects.Brick):
-                self.owner.onDestroyBrick(obj)
-            f = Explosion(self.environment, self.owner)
+                self.owner.onDestroyBrick(obj, self.ref_state)
+            f = Explosion(self.environment, self.owner, self.ref_state)
             f.setCenterPos(self.x+offset, self.y)
             self.environment.grid[self.y][self.x+offset] = f
 
 
 class Explosion(objects.Object):
 
-    def __init__(self, environment, owner):
+    def __init__(self, environment, owner, ref_state):
         super().__init__(True, "explosion")
         self.remaining = 1
         self.environment = environment
         self.owner = owner
+        self.ref_state = ref_state
 
     def setCenterPos(self, x, y):
         super().setCenterPos(x, y)
@@ -75,9 +78,9 @@ class Explosion(objects.Object):
         # self.environment.players = newList
 
     def checkPlayerInside(self, player):
-        if player.x == self.x and player.y == self.y:
+        if player.alive and player.x == self.x and player.y == self.y:
             player.onDeath()
-            self.owner.onKill(player)
+            self.owner.onKill(player, self.ref_state)
             return True
         return False
 
