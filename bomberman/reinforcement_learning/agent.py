@@ -3,8 +3,14 @@ import arcade
 from ..game.player import Player
 from ..game.bomb import Bomb
 
-ACTIONS = [arcade.key.Z, arcade.key.S,
-           arcade.key.Q, arcade.key.D, arcade.key.SPACE, 0]
+MOVE_UP = arcade.key.Z
+MOVE_LEFT = arcade.key.Q
+MOVE_DOWN = arcade.key.S
+MOVE_RIGHT = arcade.key.D
+BOMB = arcade.key.SPACE
+IDLE = 0
+ACTIONS = [MOVE_UP, MOVE_DOWN,
+           MOVE_LEFT, MOVE_RIGHT, BOMB, IDLE]
 
 REWARD_IMPOSSIBLE = -60
 REWARD_DEATH = -50
@@ -18,7 +24,7 @@ REWARD_WIN = 80
 DEFAULT_LEARNING_RATE = 1
 DEFAULT_DISCOUNT_FACTOR = 0.5
 
-# TODO position relatve des autres joueurs, position des bombes
+# TODO state: ajouer position relatve des autres joueurs, position des bombes et leurs timers
 
 
 class Agent(Player):
@@ -47,12 +53,12 @@ class Agent(Player):
         # there is a bomb at player's location
         is_bomb = isinstance(self.environment.grid[self.y][self.x], Bomb)
 
-        if action != 0:  # 0 means do nothing
+        if action != IDLE:
             self.move(action, 0)
         else:
             reward = REWARD_IDLE
 
-        if self.previous_state[0] == self.x and self.previous_state[1] == self.y and action != arcade.key.SPACE and action != 0:
+        if self.previous_state[0] == self.x and self.previous_state[1] == self.y and action != BOMB and action != IDLE:
             reward = REWARD_IMPOSSIBLE
         elif action == arcade.key.SPACE and not is_bomb:
             reward = REWARD_BOMB
@@ -75,13 +81,13 @@ class Agent(Player):
         self.score += reward
         # TODO how to match source action?
         self.policy.update(ref_state, (self.x, self.y),
-                           arcade.key.SPACE, reward)
+                           BOMB, reward)
 
     def onDestroyBrick(self, brick, ref_state):
         reward = REWARD_DESTROY_BRICKS
         self.score += reward
         self.policy.update(ref_state, (self.x, self.y),
-                           arcade.key.SPACE, reward)
+                           BOMB, reward)
 
 
 class Policy:  # Q-table
@@ -111,7 +117,7 @@ class Policy:  # Q-table
 
     def update(self, previous_state, state, last_action, reward):
         if last_action == -1:
-            # TODO should update policy on death (action == -1), on brick destroyed
+            # TODO should update policy on death (action == -1)
             return
         # Q(st, at) = Q(st, at) + learning_rate * (reward + discount_factor * max(Q(state)) - Q(st, at))
         maxQ = max(self.table[state].values())
