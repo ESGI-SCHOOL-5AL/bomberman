@@ -2,6 +2,7 @@ import arcade
 
 from . import objects
 from .bomb import Bomb
+from .bomb import Explosion
 
 
 class Player(objects.Object):
@@ -31,6 +32,9 @@ class Player(objects.Object):
             b = Bomb(self.environment, self)
             b.setCenterPos(self.x, self.y)
             self.environment.grid[self.y][self.x] = b
+
+        if isinstance(self.environment.grid[self.y][self.x], Explosion):
+            self.onDeath()
         self.updateCenterPos()
 
     def reset(self):
