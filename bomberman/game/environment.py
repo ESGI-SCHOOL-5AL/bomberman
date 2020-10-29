@@ -77,10 +77,10 @@ class Environment:
 
     def update(self, delta_time):
         self.spriteList = self.toSpriteList()
-        for s in self.spriteList:
-            s.update(delta_time)
         for p in self.players:
             p.update(delta_time)
+        for s in self.spriteList:
+            s.update(delta_time)
 
         ok = False
         for p in self.players:
