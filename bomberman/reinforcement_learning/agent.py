@@ -24,30 +24,41 @@ REWARD_WIN = 80
 DEFAULT_LEARNING_RATE = 1
 DEFAULT_DISCOUNT_FACTOR = 0.5
 
-# TODO state: ajouer position relatve des autres joueurs, position des bombes et leurs timers
+# TODO state: ajouter position relative des autres joueurs, position des bombes et leurs timers
 
 
 class Agent(Player):
 
     def __init__(self, environment):
         super().__init__(environment)
-        self.policy = Policy(environment.states.keys(), ACTIONS)
+        self.policy = Policy(environment.generateStates(), ACTIONS)
         self.reset()
 
     def reset(self):
         super().reset()
         self.score = 0
         self.last_action = 0
-        self.previous_state = (self.x, self.y)
+        self.previous_state = self.makeState()
+
+    def makeState(self):
+        #   O
+        #  OXO
+        #   O
+        # Cross representing agent's vision
+        return (
+            self.environment.grid[self.y-1][self.x].__class__.__name__,
+            self.environment.grid[self.y][self.x-1].__class__.__name__,
+            self.environment.grid[self.y][self.x+1].__class__.__name__,
+            self.environment.grid[self.y+1][self.x].__class__.__name__,
+        )
 
     def update(self, delta_time):
         if not self.alive:
             return
 
-        state = (self.x, self.y)
+        state = self.makeState()
         reward = REWARD_DEFAULT
-        action = self.policy.best_action(
-            state, self.environment, self.x, self.y)
+        action = self.policy.best_action(state, self.environment)
         self.previous_state = state
 
         # there is a bomb at player's location
@@ -72,25 +83,26 @@ class Agent(Player):
         reward = REWARD_DEATH
         self.score += reward
         # -1 means he is not responsible
-        self.policy.update(self.previous_state, (self.x, self.y), -1, reward)
+        self.policy.update(self.previous_state, self.makeState(), -1, reward)
 
-    def onKill(self, player, ref_state):
+    def onKill(self, player):
         reward = REWARD_KILL
         if player == self:
             reward *= -1
         self.score += reward
         # TODO how to match source action?
-        self.policy.update(ref_state, (self.x, self.y),
+        self.policy.update(self.previous_state, self.makeState(),
                            BOMB, reward)
 
-    def onDestroyBrick(self, brick, ref_state):
+    def onDestroyBrick(self, brick):
         reward = REWARD_DESTROY_BRICKS
         self.score += reward
-        self.policy.update(ref_state, (self.x, self.y),
+        self.policy.update(self.previous_state, self.makeState(),
                            BOMB, reward)
 
 
 class Policy:  # Q-table
+    # TODO partager q table
     def __init__(self, states, actions,
                  learning_rate=DEFAULT_LEARNING_RATE,
                  discount_factor=DEFAULT_DISCOUNT_FACTOR):
@@ -108,7 +120,7 @@ class Policy:  # Q-table
             res += f'{state}\t{self.table[state]}\n'
         return res
 
-    def best_action(self, state, environment, x, y):
+    def best_action(self, state, environment):
         action = None
         for a in self.table[state]:
             if action is None or self.table[state][a] > self.table[state][action]:

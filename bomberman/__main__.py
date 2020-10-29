@@ -19,7 +19,7 @@ class BombermanGame(arcade.Window):
 
     def setup(self):
         self.env = environment.Environment()
-        # self.playablePlayer = self.env.players[0]
+        #self.playablePlayer = self.env.players[0]
 
     def on_draw(self):
         # This command should happen before we start drawing. It will clear

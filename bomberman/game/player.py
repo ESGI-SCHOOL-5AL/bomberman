@@ -25,7 +25,7 @@ class Player(objects.Object):
         elif (key == arcade.key.D or key == arcade.key.RIGHT) and self.environment.grid[self.y][self.x+1].traversable:
             self.x += 1
         elif key == arcade.key.SPACE and not isinstance(self.environment.grid[self.y][self.x], Bomb):
-            b = Bomb(self.environment, self, (self.x, self.y))
+            b = Bomb(self.environment, self)
             b.setCenterPos(self.x, self.y)
             self.environment.grid[self.y][self.x] = b
         self.updateCenterPos()
@@ -36,8 +36,8 @@ class Player(objects.Object):
     def onDeath(self):
         self.alive = False
 
-    def onKill(self, player, ref_state):
+    def onKill(self, player):
         pass
 
-    def onDestroyBrick(self, brick, ref_state):
+    def onDestroyBrick(self, brick):
         pass

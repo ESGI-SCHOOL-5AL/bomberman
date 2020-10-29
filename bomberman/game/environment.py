@@ -26,7 +26,6 @@ class Environment:
 
     def generateTerrain(self):
         self.grid = []
-        self.states = {}
         for i in range(GRID_HEIGHT):
             self.grid.append([])
             for j in range(GRID_WIDTH):
@@ -47,13 +46,102 @@ class Environment:
                     brick = objects.Brick()
                     brick.setCenterPos(j, i)
                     self.grid[i].append(brick)
-                self.states[(i, j)] = self.grid[i][j]
 
         # Remove bricks at players start position
         for pos in CORNERS:
             floor = objects.Floor()
             floor.setCenterPos(pos[0], pos[1])
             self.grid[pos[1]][pos[0]] = floor
+
+    def generateStates(self):
+        states = []
+        for y in range(GRID_HEIGHT):
+            if y == 0 or y == GRID_HEIGHT-1:
+                continue
+            for x in range(GRID_WIDTH):
+                if x == 0 or x == GRID_WIDTH-1:
+                    continue
+                state = (
+                    self.grid[y-1][x].__class__.__name__,
+                    self.grid[y][x-1].__class__.__name__,
+                    self.grid[y][x+1].__class__.__name__,
+                    self.grid[y+1][x].__class__.__name__,
+                )
+                if state not in states:
+                    states.append(state)
+                    states.append((
+                        "Bomb",
+                        self.grid[y][x-1].__class__.__name__,
+                        self.grid[y][x+1].__class__.__name__,
+                        self.grid[y+1][x].__class__.__name__,
+                    ))
+                    states.append((
+                        self.grid[y-1][x].__class__.__name__,
+                        "Bomb",
+                        self.grid[y][x+1].__class__.__name__,
+                        self.grid[y+1][x].__class__.__name__,
+                    ))
+                    states.append((
+                        self.grid[y-1][x].__class__.__name__,
+                        self.grid[y][x-1].__class__.__name__,
+                        "Bomb",
+                        self.grid[y+1][x].__class__.__name__,
+                    ))
+                    states.append((
+                        self.grid[y-1][x].__class__.__name__,
+                        self.grid[y][x-1].__class__.__name__,
+                        self.grid[y][x+1].__class__.__name__,
+                        "Bomb",
+                    ))
+                    states.append((
+                        "Explosion",
+                        self.grid[y][x-1].__class__.__name__,
+                        self.grid[y][x+1].__class__.__name__,
+                        self.grid[y+1][x].__class__.__name__,
+                    ))
+                    states.append((
+                        self.grid[y-1][x].__class__.__name__,
+                        "Explosion",
+                        self.grid[y][x+1].__class__.__name__,
+                        self.grid[y+1][x].__class__.__name__,
+                    ))
+                    states.append((
+                        self.grid[y-1][x].__class__.__name__,
+                        self.grid[y][x-1].__class__.__name__,
+                        "Explosion",
+                        self.grid[y+1][x].__class__.__name__,
+                    ))
+                    states.append((
+                        self.grid[y-1][x].__class__.__name__,
+                        self.grid[y][x-1].__class__.__name__,
+                        self.grid[y][x+1].__class__.__name__,
+                        "Explosion",
+                    ))
+                    states.append((
+                        "Explosion",
+                        self.grid[y][x-1].__class__.__name__,
+                        self.grid[y][x+1].__class__.__name__,
+                        "Explosion",
+                    ))
+                    states.append((
+                        self.grid[y-1][x].__class__.__name__,
+                        self.grid[y][x-1].__class__.__name__,
+                        "Explosion",
+                        "Explosion",
+                    ))
+                    states.append((
+                        "Explosion",
+                        "Explosion",
+                        self.grid[y][x+1].__class__.__name__,
+                        self.grid[y+1][x].__class__.__name__,
+                    ))
+                    states.append((
+                        self.grid[y-1][x].__class__.__name__,
+                        "Explosion",
+                        "Explosion",
+                        self.grid[y+1][x].__class__.__name__,
+                    ))
+        return states
 
     def reset(self):
         self.generateTerrain()
@@ -99,5 +187,6 @@ class Environment:
         self.players = arcade.SpriteList()
         for pos in [(1, 1), (GRID_WIDTH-2, GRID_HEIGHT-2), (1, GRID_HEIGHT-2), (GRID_WIDTH-2, 1)]:
             p = Agent(self)
+            #p = Player(self)
             p.setCenterPos(pos[0], pos[1])
             self.players.append(p)
