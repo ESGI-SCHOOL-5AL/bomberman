@@ -36,8 +36,8 @@ class Player(objects.Object):
     def onDeath(self):
         self.alive = False
 
-    def onKill(self, player):
+    def onKill(self, player, ref_state):
         pass
 
-    def onDestroyBrick(self, brick):
+    def onDestroyBrick(self, brick, ref_state):
         pass
