@@ -12,19 +12,17 @@ IDLE = 0
 ACTIONS = [MOVE_UP, MOVE_DOWN,
            MOVE_LEFT, MOVE_RIGHT, BOMB, IDLE]
 
-REWARD_IMPOSSIBLE = -60
+REWARD_IMPOSSIBLE = -100
 REWARD_DEATH = -50
 REWARD_DEFAULT = -1
 REWARD_IDLE = -2
-REWARD_BOMB = -40
-REWARD_DESTROY_BRICKS = 5
-REWARD_KILL = 60
-REWARD_WIN = 80
+REWARD_BOMB = -10
+REWARD_DESTROY_BRICKS = 10
+REWARD_KILL = 30
+REWARD_WIN = 50
 
 DEFAULT_LEARNING_RATE = 1
 DEFAULT_DISCOUNT_FACTOR = 0.5
-
-# TODO state: ajouter position relative des autres joueurs, position des bombes et leurs timers
 
 
 class Agent(Player):
@@ -45,6 +43,7 @@ class Agent(Player):
         #  OXO
         #   O
         # Cross representing agent's vision
+        # TODO add players too
         return (
             self.environment.grid[self.y-1][self.x].__class__.__name__,
             self.environment.grid[self.y][self.x-1].__class__.__name__,
@@ -83,7 +82,7 @@ class Agent(Player):
         reward = REWARD_DEATH
         self.score += reward
         # -1 means he is not responsible
-        self.policy.update(self.previous_state, self.makeState(), -1, reward)
+        # self.policy.update(self.previous_state, self.makeState(), -1, reward)
 
     def onKill(self, player):
         reward = REWARD_KILL
@@ -91,14 +90,12 @@ class Agent(Player):
             reward *= -1
         self.score += reward
         # TODO how to match source action?
-        self.policy.update(self.previous_state, self.makeState(),
-                           BOMB, reward)
+        # self.policy.update(self.previous_state, self.makeState(), BOMB, reward)
 
     def onDestroyBrick(self, brick):
         reward = REWARD_DESTROY_BRICKS
         self.score += reward
-        self.policy.update(self.previous_state, self.makeState(),
-                           BOMB, reward)
+        # self.policy.update(self.previous_state, self.makeState(), BOMB, reward)
 
 
 class Policy:  # Q-table
