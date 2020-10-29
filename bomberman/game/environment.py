@@ -56,7 +56,7 @@ class Environment:
 
     def generateStates(self):
         types = ["Floor", "Wall", "Brick", "Bomb", "Explosion"]
-        return [ele for ele in product(types, repeat=4)]
+        return [ele for ele in product(types, repeat=9)]
 
     def reset(self):
         self.generateTerrain()
@@ -100,8 +100,10 @@ class Environment:
 
     def generatePlayers(self):
         self.players = arcade.SpriteList()
+        policy = None
         for pos in [(1, 1), (GRID_WIDTH-2, GRID_HEIGHT-2), (1, GRID_HEIGHT-2), (GRID_WIDTH-2, 1)]:
-            p = Agent(self)
+            p = Agent(self, policy)
+            policy = p.policy
             #p = Player(self)
             p.setCenterPos(pos[0], pos[1])
             self.players.append(p)

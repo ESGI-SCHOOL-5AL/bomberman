@@ -13,13 +13,13 @@ ACTIONS = [MOVE_UP, MOVE_DOWN,
            MOVE_LEFT, MOVE_RIGHT, BOMB, IDLE]
 
 REWARD_IMPOSSIBLE = -100
-REWARD_DEATH = -50
+REWARD_DEATH = -60
 REWARD_DEFAULT = -1
 REWARD_IDLE = -2
-REWARD_BOMB = -10
-REWARD_DESTROY_BRICKS = 10
-REWARD_KILL = 30
-REWARD_WIN = 50
+REWARD_BOMB = -50
+REWARD_DESTROY_BRICKS = 20
+REWARD_KILL = 40
+REWARD_WIN = 60
 
 DEFAULT_LEARNING_RATE = 1
 DEFAULT_DISCOUNT_FACTOR = 0.5
@@ -27,9 +27,11 @@ DEFAULT_DISCOUNT_FACTOR = 0.5
 
 class Agent(Player):
 
-    def __init__(self, environment):
+    def __init__(self, environment, policy=None):
         super().__init__(environment)
-        self.policy = Policy(environment.generateStates(), ACTIONS)
+        if policy == None:
+            policy = Policy(environment.generateStates(), ACTIONS)
+        self.policy = policy
         self.reset()
 
     def reset(self):
@@ -45,10 +47,15 @@ class Agent(Player):
         # Cross representing agent's vision
         # TODO add players too
         return (
+            self.environment.grid[self.y-1][self.x-1].__class__.__name__,
             self.environment.grid[self.y-1][self.x].__class__.__name__,
+            self.environment.grid[self.y-1][self.x+1].__class__.__name__,
             self.environment.grid[self.y][self.x-1].__class__.__name__,
+            self.environment.grid[self.y][self.x].__class__.__name__,
             self.environment.grid[self.y][self.x+1].__class__.__name__,
+            self.environment.grid[self.y+1][self.x-1].__class__.__name__,
             self.environment.grid[self.y+1][self.x].__class__.__name__,
+            self.environment.grid[self.y+1][self.x+1].__class__.__name__,
         )
 
     def update(self, delta_time):
@@ -57,7 +64,7 @@ class Agent(Player):
 
         state = self.makeState()
         reward = REWARD_DEFAULT
-        action = self.policy.best_action(state, self.environment)
+        action = self.policy.best_action(state)
         self.previous_state = state
 
         # there is a bomb at player's location
@@ -70,7 +77,9 @@ class Agent(Player):
 
         if self.previous_state[0] == self.x and self.previous_state[1] == self.y and action != BOMB and action != IDLE:
             reward = REWARD_IMPOSSIBLE
-        elif action == arcade.key.SPACE and not is_bomb:
+        elif action == BOMB and self.current_bombs >= self.max_bombs:
+            reward = REWARD_IMPOSSIBLE
+        elif action == BOMB and not is_bomb:
             reward = REWARD_BOMB
 
         self.score += reward
@@ -99,7 +108,6 @@ class Agent(Player):
 
 
 class Policy:  # Q-table
-    # TODO partager q table
     def __init__(self, states, actions,
                  learning_rate=DEFAULT_LEARNING_RATE,
                  discount_factor=DEFAULT_DISCOUNT_FACTOR):
@@ -117,7 +125,7 @@ class Policy:  # Q-table
             res += f'{state}\t{self.table[state]}\n'
         return res
 
-    def best_action(self, state, environment):
+    def best_action(self, state):
         action = None
         for a in self.table[state]:
             if action is None or self.table[state][a] > self.table[state][action]:

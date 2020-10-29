@@ -10,6 +10,8 @@ class Player(objects.Object):
         super().__init__(False, "player_front")
         self.environment = environment
         self.alive = True
+        self.max_bombs = 1
+        self.current_bombs = 0
 
     def updateCenterPos(self):
         self.center_x = self.width * self.x + self.width / 2
@@ -24,7 +26,8 @@ class Player(objects.Object):
             self.y -= 1
         elif (key == arcade.key.D or key == arcade.key.RIGHT) and self.environment.grid[self.y][self.x+1].traversable:
             self.x += 1
-        elif key == arcade.key.SPACE and not isinstance(self.environment.grid[self.y][self.x], Bomb):
+        elif key == arcade.key.SPACE and not isinstance(self.environment.grid[self.y][self.x], Bomb) and self.current_bombs < self.max_bombs:
+            self.current_bombs += 1
             b = Bomb(self.environment, self)
             b.setCenterPos(self.x, self.y)
             self.environment.grid[self.y][self.x] = b

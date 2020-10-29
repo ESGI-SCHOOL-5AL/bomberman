@@ -17,6 +17,7 @@ class Bomb(objects.Object):
     def update(self, delta_time):
         self.remaining -= delta_time
         if self.remaining <= 0:
+            self.owner.current_bombs -= 1
             self.destroyNear()
         else:
             self.set_texture(int(self.remaining))
