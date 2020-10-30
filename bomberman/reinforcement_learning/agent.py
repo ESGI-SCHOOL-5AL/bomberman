@@ -13,14 +13,15 @@ IDLE = 0
 ACTIONS = [MOVE_UP, MOVE_DOWN,
            MOVE_LEFT, MOVE_RIGHT, BOMB, IDLE]
 
-REWARD_IMPOSSIBLE = -200
-REWARD_DEATH = -120
+REWARD_IMPOSSIBLE = -100
+REWARD_DEATH = -60
 REWARD_DEFAULT = -1
 REWARD_IDLE = -2
-REWARD_BOMB = -60
-REWARD_DESTROY_BRICKS = 40
-REWARD_KILL = 80
-REWARD_WIN = 120
+REWARD_MOVE_NEAR_BOMB = -10
+REWARD_BOMB = -10
+REWARD_DESTROY_BRICKS = 20
+REWARD_KILL = 40
+REWARD_WIN = 60
 
 DEFAULT_LEARNING_RATE = 0.75
 DEFAULT_DISCOUNT_FACTOR = 0.5
@@ -84,9 +85,17 @@ class Agent(Player):
             reward = REWARD_BOMB
         elif isinstance(self.environment.grid[self.y][self.x], Explosion) and action != BOMB and action != IDLE:
             reward = REWARD_DEATH
+        elif action != BOMB and action != IDLE and self.nearBomb():
+            reward = REWARD_MOVE_NEAR_BOMB
 
         self.score += reward
         self.policy.update(self.previous_state, state, action, reward)
+
+    def nearBomb(self):
+        return isinstance(self.environment.grid[self.y-1][self.x], Bomb) or \
+            isinstance(self.environment.grid[self.y+1][self.x], Bomb) or \
+            isinstance(self.environment.grid[self.y][self.x-1], Bomb) or \
+            isinstance(self.environment.grid[self.y][self.x+1], Bomb)
 
     def onDeath(self):
         super().onDeath()
