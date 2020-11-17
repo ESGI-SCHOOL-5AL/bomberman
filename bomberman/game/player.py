@@ -35,6 +35,7 @@ class Player(objects.Object):
 
         if isinstance(self.environment.grid[self.y][self.x], Explosion):
             self.onDeath()
+            self.environment.grid[self.y][self.x].owner.onKill(self)
         self.updateCenterPos()
 
     def reset(self):

@@ -18,13 +18,13 @@ REWARD_DEATH = -60
 REWARD_DEFAULT = -1
 REWARD_IDLE = -2
 REWARD_MOVE_NEAR_BOMB = -10
-REWARD_BOMB = -10
+REWARD_BOMB = 30
 REWARD_DESTROY_BRICKS = 20
 REWARD_KILL = 40
 REWARD_WIN = 60
 
-DEFAULT_LEARNING_RATE = 0.75
-DEFAULT_DISCOUNT_FACTOR = 0.5
+DEFAULT_LEARNING_RATE = 0.1
+DEFAULT_DISCOUNT_FACTOR = 0.8
 
 
 class Agent(Player):
@@ -39,14 +39,13 @@ class Agent(Player):
     def reset(self):
         super().reset()
         self.score = 0
-        self.last_action = 0
         self.previous_state = self.makeState()
 
     def makeState(self):
-        #   O
+        #  OOO
         #  OXO
-        #   O
-        # Cross representing agent's vision
+        #  OOO
+        # Square representing agent's vision
         # TODO add players too
         return (
             self.environment.grid[self.y-1][self.x-1].__class__.__name__,
@@ -81,6 +80,8 @@ class Agent(Player):
             reward = REWARD_IMPOSSIBLE
         elif action == BOMB and self.current_bombs >= self.max_bombs:
             reward = REWARD_IMPOSSIBLE
+        elif action == BOMB and (self.current_bombs >= self.max_bombs or is_bomb):
+            reward = REWARD_IDLE
         elif action == BOMB and not is_bomb:
             reward = REWARD_BOMB
         elif isinstance(self.environment.grid[self.y][self.x], Explosion) and action != BOMB and action != IDLE:
