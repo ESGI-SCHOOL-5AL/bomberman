@@ -9,7 +9,7 @@ class Bomb(objects.Object):
         super().__init__(False, "bomb_2")
         self.append_texture(arcade.load_texture("sprites/bomb_1.png"))
         self.append_texture(arcade.load_texture("sprites/bomb_0.png"))
-        self.remaining = 3
+        self.remaining = 1  # TODO set back to 3
         self.power = 3
         self.environment = environment
         self.owner = owner

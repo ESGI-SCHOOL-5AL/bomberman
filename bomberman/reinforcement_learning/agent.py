@@ -23,7 +23,7 @@ REWARD_DESTROY_BRICKS = 20
 REWARD_KILL = 40
 REWARD_WIN = 60
 
-DEFAULT_LEARNING_RATE = 0.1
+DEFAULT_LEARNING_RATE = 0.3
 DEFAULT_DISCOUNT_FACTOR = 0.8
 
 
@@ -39,13 +39,14 @@ class Agent(Player):
     def reset(self):
         super().reset()
         self.score = 0
+        self.exception = -1
         self.previous_state = self.makeState()
 
     def makeState(self):
         #  OOO
         #  OXO
         #  OOO
-        # Square representing agent's vision
+        # Square representing agent's vision and bomb count
         # TODO add players too
         return (
             self.environment.grid[self.y-1][self.x-1].__class__.__name__,
@@ -57,6 +58,7 @@ class Agent(Player):
             self.environment.grid[self.y+1][self.x-1].__class__.__name__,
             self.environment.grid[self.y+1][self.x].__class__.__name__,
             self.environment.grid[self.y+1][self.x+1].__class__.__name__,
+            self.current_bombs
         )
 
     def update(self, delta_time):
@@ -66,11 +68,11 @@ class Agent(Player):
         state = self.makeState()
         self.previous_state = state
         reward = REWARD_DEFAULT
-        action = self.policy.best_action(state)
+        action = self.policy.best_action(state, self.exception)
+        bomb_count = self.current_bombs
 
         # there is a bomb at player's location
         is_bomb = isinstance(self.environment.grid[self.y][self.x], Bomb)
-        bomb_count = self.current_bombs
 
         if action != IDLE:
             self.move(action, 0)
@@ -80,15 +82,17 @@ class Agent(Player):
 
         if self.previous_state[0] == self.x and self.previous_state[1] == self.y and action != BOMB and action != IDLE:
             reward = REWARD_IMPOSSIBLE
-        elif action == BOMB and (bomb_count >= self.max_bombs or is_bomb):
-            reward = REWARD_IMPOSSIBLE
-        elif action == BOMB and not is_bomb:
-            reward = REWARD_BOMB
+        elif action == BOMB:
+            if is_bomb or bomb_count >= self.max_bombs:
+                reward = REWARD_IMPOSSIBLE
+            else:
+                reward = REWARD_BOMB
         elif isinstance(self.environment.grid[self.y][self.x], Explosion) and action != BOMB and action != IDLE:
             reward = REWARD_DEATH
         elif not is_bomb and action != BOMB and action != IDLE and self.nearBomb():
             reward = REWARD_MOVE_NEAR_BOMB
 
+        self.exception = -1
         self.score += reward
         self.policy.update(self.previous_state, state, action, reward)
 
@@ -137,11 +141,14 @@ class Policy:  # Q-table
             res += f'{state}\t{self.table[state]}\n'
         return res
 
-    def best_action(self, state):
+    def best_action(self, state, exception):
         action = None
         for a in self.table[state]:
+            if a == exception:
+                continue
             if action is None or self.table[state][a] > self.table[state][action]:
                 action = a
+
         return action
 
     def update(self, previous_state, state, last_action, reward):

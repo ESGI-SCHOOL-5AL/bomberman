@@ -56,7 +56,15 @@ class Environment:
 
     def generateStates(self):
         types = ["Floor", "Wall", "Brick", "Bomb", "Explosion"]
-        return [ele for ele in product(types, repeat=9)]
+        states = [ele for ele in product(types, repeat=9)]
+        result = []
+        for s in states:
+            result.append((s[0], s[1], s[2], s[3], s[4],
+                           s[5], s[6], s[7], s[8], 0))
+            result.append((s[0], s[1], s[2], s[3], s[4],
+                           s[5], s[6], s[7], s[8], 1))
+
+        return result
 
     def reset(self):
         self.generateTerrain()
