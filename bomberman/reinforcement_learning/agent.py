@@ -18,7 +18,7 @@ REWARD_DEATH = -60
 REWARD_DEFAULT = -1
 REWARD_IDLE = -2
 REWARD_MOVE_NEAR_BOMB = -10
-REWARD_BOMB = 30
+REWARD_BOMB = 0
 REWARD_DESTROY_BRICKS = 20
 REWARD_KILL = 40
 REWARD_WIN = 60
@@ -64,29 +64,29 @@ class Agent(Player):
             return
 
         state = self.makeState()
+        self.previous_state = state
         reward = REWARD_DEFAULT
         action = self.policy.best_action(state)
-        self.previous_state = state
 
         # there is a bomb at player's location
         is_bomb = isinstance(self.environment.grid[self.y][self.x], Bomb)
+        bomb_count = self.current_bombs
 
         if action != IDLE:
             self.move(action, 0)
+            state = self.makeState()
         else:
             reward = REWARD_IDLE
 
         if self.previous_state[0] == self.x and self.previous_state[1] == self.y and action != BOMB and action != IDLE:
             reward = REWARD_IMPOSSIBLE
-        elif action == BOMB and self.current_bombs >= self.max_bombs:
+        elif action == BOMB and (bomb_count >= self.max_bombs or is_bomb):
             reward = REWARD_IMPOSSIBLE
-        elif action == BOMB and (self.current_bombs >= self.max_bombs or is_bomb):
-            reward = REWARD_IDLE
         elif action == BOMB and not is_bomb:
             reward = REWARD_BOMB
         elif isinstance(self.environment.grid[self.y][self.x], Explosion) and action != BOMB and action != IDLE:
             reward = REWARD_DEATH
-        elif action != BOMB and action != IDLE and self.nearBomb():
+        elif not is_bomb and action != BOMB and action != IDLE and self.nearBomb():
             reward = REWARD_MOVE_NEAR_BOMB
 
         self.score += reward
