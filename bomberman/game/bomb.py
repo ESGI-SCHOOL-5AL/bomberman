@@ -63,7 +63,7 @@ class Explosion(objects.Object):
 
     def __init__(self, environment, owner):
         super().__init__(True, "explosion")
-        self.remaining = 1
+        self.remaining = 1/3
         self.environment = environment
         self.owner = owner
 

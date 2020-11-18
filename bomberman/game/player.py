@@ -40,6 +40,7 @@ class Player(objects.Object):
 
     def reset(self):
         self.alive = True
+        self.current_bombs = 0
 
     def onDeath(self):
         self.alive = False

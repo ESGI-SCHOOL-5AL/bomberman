@@ -1,4 +1,7 @@
 import arcade
+import random
+
+from datetime import datetime
 
 from ..game.player import Player
 from ..game.bomb import Bomb
@@ -130,6 +133,8 @@ class Policy:  # Q-table
         self.table = {}
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
+        self.exploration = 1.0
+        random.seed(datetime.now())
         for s in states:
             self.table[s] = {}
             for a in actions:
@@ -142,6 +147,10 @@ class Policy:  # Q-table
         return res
 
     def best_action(self, state, exception):
+        self.exploration *= 0.99
+        if self.exploration > random.random():
+            return random.choice(ACTIONS)
+
         action = None
         for a in self.table[state]:
             if a == exception:
