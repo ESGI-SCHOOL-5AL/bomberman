@@ -1,5 +1,7 @@
 import arcade
 import random
+import numpy as np
+from sklearn.neural_network import MLPRegressor
 
 from datetime import datetime
 
@@ -16,6 +18,14 @@ IDLE = 0
 ACTIONS = [MOVE_UP, MOVE_DOWN,
            MOVE_LEFT, MOVE_RIGHT, BOMB, IDLE]
 
+TILES = {
+    "Floor": 0 / 5,
+    "Wall": 1 / 5,
+    "Brick": 2 / 5,
+    "Bomb": 3 / 5,
+    "Explosion": 4 / 5
+}
+
 REWARD_IMPOSSIBLE = -100
 REWARD_DEATH = -60
 REWARD_DEFAULT = -1
@@ -26,7 +36,7 @@ REWARD_DESTROY_BRICKS = 20
 REWARD_KILL = 40
 REWARD_WIN = 60
 
-DEFAULT_LEARNING_RATE = 0.3
+DEFAULT_LEARNING_RATE = 0.001
 DEFAULT_DISCOUNT_FACTOR = 0.8
 
 
@@ -35,14 +45,13 @@ class Agent(Player):
     def __init__(self, environment, policy=None):
         super().__init__(environment)
         if policy == None:
-            policy = Policy(environment.generateStates(), ACTIONS)
+            policy = Policy(ACTIONS)
         self.policy = policy
         self.reset()
 
     def reset(self):
         super().reset()
         self.score = 0
-        self.exception = -1
         self.previous_state = self.makeState()
 
     def makeState(self):
@@ -51,18 +60,18 @@ class Agent(Player):
         #  OOO
         # Square representing agent's vision and bomb count
         # TODO add players too
-        return (
-            self.environment.grid[self.y-1][self.x-1].__class__.__name__,
-            self.environment.grid[self.y-1][self.x].__class__.__name__,
-            self.environment.grid[self.y-1][self.x+1].__class__.__name__,
-            self.environment.grid[self.y][self.x-1].__class__.__name__,
-            self.environment.grid[self.y][self.x].__class__.__name__,
-            self.environment.grid[self.y][self.x+1].__class__.__name__,
-            self.environment.grid[self.y+1][self.x-1].__class__.__name__,
-            self.environment.grid[self.y+1][self.x].__class__.__name__,
-            self.environment.grid[self.y+1][self.x+1].__class__.__name__,
-            self.current_bombs
-        )
+        return [[
+            TILES[self.environment.grid[self.y-1][self.x-1].__class__.__name__],
+            TILES[self.environment.grid[self.y-1][self.x].__class__.__name__],
+            TILES[self.environment.grid[self.y-1][self.x+1].__class__.__name__],
+            TILES[self.environment.grid[self.y][self.x-1].__class__.__name__],
+            TILES[self.environment.grid[self.y][self.x].__class__.__name__],
+            TILES[self.environment.grid[self.y][self.x+1].__class__.__name__],
+            TILES[self.environment.grid[self.y+1][self.x-1].__class__.__name__],
+            TILES[self.environment.grid[self.y+1][self.x].__class__.__name__],
+            TILES[self.environment.grid[self.y+1][self.x+1].__class__.__name__],
+            float(self.current_bombs)
+        ]]
 
     def update(self, delta_time):
         if not self.alive:
@@ -71,7 +80,7 @@ class Agent(Player):
         state = self.makeState()
         self.previous_state = state
         reward = REWARD_DEFAULT
-        action = self.policy.best_action(state, self.exception)
+        action = self.policy.best_action(state)
         bomb_count = self.current_bombs
 
         # there is a bomb at player's location
@@ -95,7 +104,6 @@ class Agent(Player):
         elif not is_bomb and action != BOMB and action != IDLE and self.nearBomb():
             reward = REWARD_MOVE_NEAR_BOMB
 
-        self.exception = -1
         self.score += reward
         self.policy.update(self.previous_state, state, action, reward)
 
@@ -126,46 +134,43 @@ class Agent(Player):
         # self.policy.update(self.previous_state, self.makeState(), BOMB, reward)
 
 
-class Policy:  # Q-table
-    def __init__(self, states, actions,
+class Policy:  # MLPRegressor
+    def __init__(self, actions,
                  learning_rate=DEFAULT_LEARNING_RATE,
                  discount_factor=DEFAULT_DISCOUNT_FACTOR):
-        self.table = {}
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
-        self.exploration = 1.0
-        random.seed(datetime.now())
-        for s in states:
-            self.table[s] = {}
-            for a in actions:
-                self.table[s][a] = 0
+        self.actions = actions
+        self.mlp = MLPRegressor(hidden_layer_sizes = (10,),
+                                activation = 'tanh',
+                                solver = 'sgd',
+                                learning_rate_init = self.learning_rate,
+                                max_iter = 1,
+                                alpha=0.5,
+                                warm_start = True)
+        self.mlp.fit([[
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0, 0
+            ]],
+            [[0, 0, 0, 0, 0, 0]]
+        )
+        self.q_vector = None
 
     def __repr__(self):
-        res = ''
-        for state in self.table:
-            res += f'{state}\t{self.table[state]}\n'
-        return res
+        return self.q_vector
 
-    def best_action(self, state, exception):
-        self.exploration *= 0.99
-        if self.exploration > random.random():
-            return random.choice(ACTIONS)
-
-        action = None
-        for a in self.table[state]:
-            if a == exception:
-                continue
-            if action is None or self.table[state][a] > self.table[state][action]:
-                action = a
-
+    def best_action(self, state):
+        self.q_vector = self.mlp.predict(np.array(state))[0]
+        action = self.actions[np.argmax(self.q_vector)]
         return action
 
     def update(self, previous_state, state, last_action, reward):
-        if last_action == -1:
-            # TODO should update policy on death (action == -1)
-            return
-        # Q(st, at) = Q(st, at) + learning_rate * (reward + discount_factor * max(Q(state)) - Q(st, at))
-        maxQ = max(self.table[state].values())
-        self.table[previous_state][last_action] += self.learning_rate * \
-            (reward + self.discount_factor * maxQ -
-             self.table[previous_state][last_action])
+        maxQ = np.amax(self.q_vector)
+        last_action = ACTIONS.index(last_action)
+        self.q_vector[last_action] += reward + self.discount_factor * maxQ
+
+        inputs = np.array(previous_state)
+        outputs = np.array([self.q_vector])
+        print(inputs, outputs)
+        self.mlp.fit(inputs, outputs)
