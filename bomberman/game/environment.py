@@ -12,7 +12,7 @@ GRID_WIDTH = 15
 CORNERS = [
     (1, 1), (2, 1), (1, 2),
     (GRID_WIDTH-2, GRID_HEIGHT-2), (GRID_WIDTH-3,
-                                    GRID_HEIGHT-2), (GRID_WIDTH-2, GRID_HEIGHT-3),
+    GRID_HEIGHT-2), (GRID_WIDTH-2, GRID_HEIGHT-3),
     (1, GRID_HEIGHT-2), (2, GRID_HEIGHT-2), (1, GRID_HEIGHT-3),
     (GRID_WIDTH-2, 1), (GRID_WIDTH-3, 1), (GRID_WIDTH-2, 2)
 ]
@@ -91,12 +91,12 @@ class Environment:
             s.update(delta_time)
 
         ok = False
-        for p in self.players:
+        for p in self.players:      
             if p.alive:
                 ok = True
                 break
 
-        if not ok:
+        if not ok or self.numberOfLivingPlayer() == 1:
             self.reset()
 
     def toSpriteList(self):
@@ -115,3 +115,7 @@ class Environment:
             #p = Player(self)
             p.setCenterPos(pos[0], pos[1])
             self.players.append(p)
+
+    def numberOfLivingPlayer(self):
+        players_iterator = iter(self.players)
+        return len(list(filter(lambda player: player.alive, players_iterator)))

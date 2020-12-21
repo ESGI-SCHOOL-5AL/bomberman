@@ -5,18 +5,12 @@ from sklearn.neural_network import MLPRegressor
 
 from datetime import datetime
 
+from .policy import Policy
+from .actions import *
+
 from ..game.player import Player
 from ..game.bomb import Bomb
 from ..game.bomb import Explosion
-
-MOVE_UP = arcade.key.Z
-MOVE_LEFT = arcade.key.Q
-MOVE_DOWN = arcade.key.S
-MOVE_RIGHT = arcade.key.D
-BOMB = arcade.key.SPACE
-IDLE = 0
-ACTIONS = [MOVE_UP, MOVE_DOWN,
-           MOVE_LEFT, MOVE_RIGHT, BOMB, IDLE]
 
 TILES = {
     "Floor": 0 / 5,
@@ -28,17 +22,13 @@ TILES = {
 
 REWARD_IMPOSSIBLE = -100
 REWARD_DEATH = -60
-REWARD_DEFAULT = -1
-REWARD_IDLE = -2
+REWARD_DEFAULT = -5
+REWARD_IDLE = -5
 REWARD_MOVE_NEAR_BOMB = -10
 REWARD_BOMB = -1
-REWARD_DESTROY_BRICKS = 20
+REWARD_DESTROY_BRICKS = 30
 REWARD_KILL = 40
 REWARD_WIN = 60
-
-DEFAULT_LEARNING_RATE = 0.001
-DEFAULT_DISCOUNT_FACTOR = 0.8
-
 
 class Agent(Player):
 
@@ -82,6 +72,9 @@ class Agent(Player):
         reward = REWARD_DEFAULT
         action = self.policy.best_action(state)
         bomb_count = self.current_bombs
+        
+        if self.environment.numberOfLivingPlayer() == 1:
+            reward = REWARD_WIN
 
         # there is a bomb at player's location
         is_bomb = isinstance(self.environment.grid[self.y][self.x], Bomb)
@@ -132,45 +125,3 @@ class Agent(Player):
         reward = REWARD_DESTROY_BRICKS
         self.score += reward
         # self.policy.update(self.previous_state, self.makeState(), BOMB, reward)
-
-
-class Policy:  # MLPRegressor
-    def __init__(self, actions,
-                 learning_rate=DEFAULT_LEARNING_RATE,
-                 discount_factor=DEFAULT_DISCOUNT_FACTOR):
-        self.learning_rate = learning_rate
-        self.discount_factor = discount_factor
-        self.actions = actions
-        self.mlp = MLPRegressor(hidden_layer_sizes = (10,),
-                                activation = 'tanh',
-                                solver = 'sgd',
-                                learning_rate_init = self.learning_rate,
-                                max_iter = 1,
-                                alpha=0.5,
-                                warm_start = True)
-        self.mlp.fit([[
-            0, 0, 0,
-            0, 0, 0,
-            0, 0, 0, 0
-            ]],
-            [[0, 0, 0, 0, 0, 0]]
-        )
-        self.q_vector = None
-
-    def __repr__(self):
-        return self.q_vector
-
-    def best_action(self, state):
-        self.q_vector = self.mlp.predict(np.array(state))[0]
-        action = self.actions[np.argmax(self.q_vector)]
-        return action
-
-    def update(self, previous_state, state, last_action, reward):
-        maxQ = np.amax(self.q_vector)
-        last_action = ACTIONS.index(last_action)
-        self.q_vector[last_action] += reward + self.discount_factor * maxQ
-
-        inputs = np.array(previous_state)
-        outputs = np.array([self.q_vector])
-        print(inputs, outputs)
-        self.mlp.fit(inputs, outputs)
