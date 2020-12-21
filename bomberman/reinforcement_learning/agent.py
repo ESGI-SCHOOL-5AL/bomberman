@@ -70,7 +70,7 @@ class Agent(Player):
         state = self.makeState()
         self.previous_state = state
         reward = REWARD_DEFAULT
-        action = self.policy.best_action(state)
+        action = self.policy.choose_action(state)
         bomb_count = self.current_bombs
         
         if self.environment.numberOfLivingPlayer() == 1:
