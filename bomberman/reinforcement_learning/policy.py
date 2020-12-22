@@ -14,7 +14,7 @@ class Policy:  # MLPRegressor
                  discount_factor=DEFAULT_DISCOUNT_FACTOR):
         self.epsilon = 1
         self.final_epsilon = 0.01
-        self.n_step = 10**6
+        self.n_step = 1000
         self.epsilon_step = (self.epsilon - self.final_epsilon) / self.n_step
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
@@ -40,17 +40,15 @@ class Policy:  # MLPRegressor
         return self.q_vector
 
     def choose_action(self, state):
+        self.q_vector = self.mlp.predict(state)[0]
         if random.random() < self.epsilon:
-            # action = random.randrange(len(ACTIONS))
             action = random.choice(ACTIONS)
         else:
             action = self.best_action(state)
-
         self.epsilon = max(self.epsilon - self.epsilon_step, self.final_epsilon)
         return action
 
     def best_action(self, state):
-        self.q_vector = self.mlp.predict(np.array(state))[0]
         action = self.actions[np.argmax(self.q_vector)]
         return action
 
