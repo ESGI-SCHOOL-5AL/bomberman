@@ -22,14 +22,15 @@ TILES = {
 }
 
 REWARD_IMPOSSIBLE = -100
-REWARD_DEATH = -9999
-REWARD_DEFAULT = -5
-REWARD_IDLE = -5
-REWARD_MOVE_NEAR_BOMB = -10
-REWARD_BOMB = -1
+REWARD_DEATH = -100
+REWARD_DEFAULT = 5
+REWARD_IDLE = -1
+REWARD_MOVE_NEAR_BOMB = -1
+REWARD_BOMB = 20
 REWARD_DESTROY_BRICKS = 30
 REWARD_KILL = 40
 REWARD_WIN = 60
+
 
 class Agent(Player):
 
@@ -52,6 +53,9 @@ class Agent(Player):
         for line in self.environment.grid:
             for element in line:
                 states[0].append(TILES[element.__class__.__name__])
+
+        states[0].append(self.x / 15)
+        states[0].append(self.y / 15)
 
         return states
 
@@ -96,7 +100,9 @@ class Agent(Player):
             isinstance(self.environment.grid[self.y][self.x+1], Bomb)
 
     def onWin(self):
-        self.policy.update(self.previous_state, self.makeState(), IDLE, REWARD_WIN)
+        self.score += REWARD_WIN
+        self.policy.update(self.previous_state,
+                           self.makeState(), IDLE, REWARD_WIN)
 
     def onDeath(self):
         super().onDeath()
@@ -116,4 +122,4 @@ class Agent(Player):
     def onDestroyBrick(self, brick):
         reward = REWARD_DESTROY_BRICKS
         self.score += reward
-        # self.policy.update(self.previous_state, self.makeState(), BOMB, reward)
+        self.policy.update(self.previous_state, self.makeState(), BOMB, reward)
