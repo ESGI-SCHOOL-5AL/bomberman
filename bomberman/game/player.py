@@ -29,9 +29,9 @@ class Player(objects.Object):
             self.x += 1
         elif key == arcade.key.SPACE and not isinstance(self.environment.grid[self.y][self.x], Bomb) and self.current_bombs < self.max_bombs:
             self.current_bombs += 1
-            b = Bomb(self.environment, self)
-            b.setCenterPos(self.x, self.y)
-            self.environment.grid[self.y][self.x] = b
+            bomb = Bomb(self.environment, self)
+            bomb.setCenterPos(self.x, self.y)
+            self.environment.grid[self.y][self.x] = bomb
 
         if isinstance(self.environment.grid[self.y][self.x], Explosion):
             self.onDeath()
@@ -46,6 +46,9 @@ class Player(objects.Object):
         self.alive = False
 
     def onKill(self, player):
+        pass
+
+    def onWin(self):
         pass
 
     def onDestroyBrick(self, brick):

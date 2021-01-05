@@ -17,11 +17,12 @@ TILES = {
     "Wall": 1 / 5,
     "Brick": 2 / 5,
     "Bomb": 3 / 5,
-    "Explosion": 4 / 5
+    "Explosion": 4 / 5,
+    "Agent": 5 / 5
 }
 
 REWARD_IMPOSSIBLE = -100
-REWARD_DEATH = -60
+REWARD_DEATH = -9999
 REWARD_DEFAULT = -5
 REWARD_IDLE = -5
 REWARD_MOVE_NEAR_BOMB = -10
@@ -45,23 +46,14 @@ class Agent(Player):
         self.previous_state = self.makeState()
 
     def makeState(self):
-        #  OOO
-        #  OXO
-        #  OOO
-        # Square representing agent's vision and bomb count
         # TODO add players too
-        return [[
-            TILES[self.environment.grid[self.y-1][self.x-1].__class__.__name__],
-            TILES[self.environment.grid[self.y-1][self.x].__class__.__name__],
-            TILES[self.environment.grid[self.y-1][self.x+1].__class__.__name__],
-            TILES[self.environment.grid[self.y][self.x-1].__class__.__name__],
-            TILES[self.environment.grid[self.y][self.x].__class__.__name__],
-            TILES[self.environment.grid[self.y][self.x+1].__class__.__name__],
-            TILES[self.environment.grid[self.y+1][self.x-1].__class__.__name__],
-            TILES[self.environment.grid[self.y+1][self.x].__class__.__name__],
-            TILES[self.environment.grid[self.y+1][self.x+1].__class__.__name__],
-            float(self.current_bombs)
-        ]]
+        states = [[]]
+
+        for line in self.environment.grid:
+            for element in line:
+                states[0].append(TILES[element.__class__.__name__])
+
+        return states
 
     def update(self, delta_time):
         if not self.alive:
@@ -72,9 +64,6 @@ class Agent(Player):
         reward = REWARD_DEFAULT
         action = self.policy.choose_action(state)
         bomb_count = self.current_bombs
-        
-        if self.environment.numberOfLivingPlayer() == 1:
-            reward = REWARD_WIN
 
         # there is a bomb at player's location
         is_bomb = isinstance(self.environment.grid[self.y][self.x], Bomb)
@@ -105,6 +94,9 @@ class Agent(Player):
             isinstance(self.environment.grid[self.y+1][self.x], Bomb) or \
             isinstance(self.environment.grid[self.y][self.x-1], Bomb) or \
             isinstance(self.environment.grid[self.y][self.x+1], Bomb)
+
+    def onWin(self):
+        self.policy.update(self.previous_state, self.makeState(), IDLE, REWARD_WIN)
 
     def onDeath(self):
         super().onDeath()

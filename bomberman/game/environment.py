@@ -54,18 +54,6 @@ class Environment:
             floor.setCenterPos(pos[0], pos[1])
             self.grid[pos[1]][pos[0]] = floor
 
-    def generateStates(self):
-        types = ["Floor", "Wall", "Brick", "Bomb", "Explosion"]
-        states = [ele for ele in product(types, repeat=9)]
-        result = []
-        for s in states:
-            result.append((s[0], s[1], s[2], s[3], s[4],
-                           s[5], s[6], s[7], s[8], 0))
-            result.append((s[0], s[1], s[2], s[3], s[4],
-                           s[5], s[6], s[7], s[8], 1))
-
-        return result
-
     def reset(self):
         self.generateTerrain()
         pos = [(1, 1), (GRID_WIDTH-2, GRID_HEIGHT-2),
@@ -97,6 +85,11 @@ class Environment:
                 break
 
         if not ok or self.numberOfLivingPlayer() == 1:
+            for p in self.players:      
+                if p.alive:
+                    p.onWin()
+                    break
+                
             self.reset()
 
     def toSpriteList(self):

@@ -5,8 +5,11 @@ from sklearn.neural_network import MLPRegressor
 from .actions import *
 from .batch import Batch
 
+GRID_HEIGHT = 15
+GRID_WIDTH = 15
+
 DEFAULT_LEARNING_RATE = 0.003
-DEFAULT_DISCOUNT_FACTOR = 0.8
+DEFAULT_DISCOUNT_FACTOR = 0.7
 
 class Policy:  # MLPRegressor
     def __init__(self, actions,
@@ -26,11 +29,12 @@ class Policy:  # MLPRegressor
                                 max_iter = 1,
                                 alpha=0.5,
                                 warm_start = True)
-        self.mlp.fit([[
-            0, 0, 0,
-            0, 0, 0,
-            0, 0, 0, 0
-            ]],
+
+        grid = []
+        for i in range(GRID_HEIGHT):
+            for j in range(GRID_WIDTH):
+                grid.append(0)
+        self.mlp.fit([grid],
             [[0, 0, 0, 0, 0, 0]]
         )
         self.q_vector = None
@@ -63,8 +67,7 @@ class Policy:  # MLPRegressor
 
         batch_result = self.batch.update_batch(inputs, outputs)
 
+        print("epsilon:", self.epsilon)
         if batch_result:            
             self.mlp.fit(np.array(batch_result[0]).reshape(-1, len(inputs[0])), np.array(batch_result[1]).reshape(-1, len(outputs[0])))
             self.batch.reset()
-
-        
